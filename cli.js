@@ -90,6 +90,13 @@ vorpal.command('deactivate <number>', 'Activate a number').types({ string: [ '_'
 	});
 });
 
+vorpal.command('reactivate <number>', 'Reactivate a number previously deactivated').types({ string: [ '_' ] }).validate(validateNumber).action(function(args, cb) {
+	var action = this;
+	api.status(args.number, function(success, data) {
+		action.log(msg);
+	});
+});
+
 vorpal.command('destination <number> <priority> <destination>', 'Set the destination of a number').types({ string: [ '_' ] }).validate(validateNumber).action(function(args, cb) {
 	var action = this;
 	api.destination(args.number, args.priority, args.destination, function(success, msg) {
@@ -116,6 +123,28 @@ vorpal.command('status <number>', 'Gets information about a number').types({ str
 	});
 });
 
+vorpal.command('available <number> [size]', 'Provide a list of available numbers. If size is not specified, then a value of 10 is assumed.')
+	.types({ string: [ '_' ] }).validate(validateAvailable).action(function(args, cb) {
+		var action = this;
+		var number = args.number;
+		var size = 10;
+		if(args.size) {
+			size = parseInt(args.size);
+		}
+		api.availableNumbers(number, size, function(success, data) {
+			if(success) {
+				action.log('Found ' + data.length + ' numbers');
+				data.forEach(function(number) {
+					action.log(number);
+				});
+			}
+			else {
+				action.log(data);
+			}
+			cb();
+		});
+	});
+
 vorpal.command('connection', 'Show information about the current connection').action(function(args, cb) {
 	this.log(api.connectionInfo());
 	cb();
@@ -127,15 +156,28 @@ vorpal.find('exit').description('Quits the CLI').action(function(args, callback)
 });
 
 function validateNumber(args) {
-	if(NTSAPI.validators.isTelephoneNumber(args.number)) {
-		return true;
+	if(!NTSAPI.validators.isTelephoneNumber(args.number)) {
+		return "Invalid number format.";
 	}
-	return "Invalid number format.";
+	return true;
 }
 
 function validateAllocatableNumber(args) {
-	if(NTSAPI.validators.isTelephoneNumber(args.number)) {
-		return true;
+	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
+		return "Invalid number format.";
 	}
-	return "Invalid number format.";
+	return true;
+}
+
+function validateAvailable(args) {
+	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
+		return 'Invalid number format';
+	}
+	if(args.size) {
+		var size = parseInt(args.size);
+		if(size == NaN || size < 1) {
+			return 'Invalid size';
+		}
+	}
+	return true;
 }
