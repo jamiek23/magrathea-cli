@@ -44,7 +44,7 @@ describe('Validators', function() {
 
 	describe('.stripWhitespace()', function() {
 		it('should strip only whitespace', function() {
-			assert.equal(validators.stripWhitespace('aa bb   ccc!@;'), 'aabbccc!@;');
+			assert.equal(validators.stripWhitespace('aa bb   ccc!@;+'), 'aabbccc!@;');
 		});
 		it('should strip newlines', function() {
 			assert.equal(validators.stripWhitespace("aa\nbb"), 'aabb');
@@ -52,6 +52,19 @@ describe('Validators', function() {
 		it('should cope with null/empty strings', function() {
 			assert.strictEqual(validators.stripWhitespace(''), '');
 			assert.strictEqual(validators.stripWhitespace(null), '');
+		});
+	});
+
+	describe('.stripNonNumeric()', function() {
+		it('should strip alpha characters', function() {
+			assert.equal(validators.stripNonNumeric('abcdefghijklmnopqrstuvwxyz'), '');
+		});
+		it('should allow numbers', function() {
+			assert.equal(validators.stripNonNumeric('+44(1234)567890'), '441234567890');
+		});
+		it('should cope with null/empty strings', function() {
+			assert.strictEqual(validators.stripNonNumeric(''), '');
+			assert.strictEqual(validators.stripNonNumeric(null), '');
 		});
 	});
 });
