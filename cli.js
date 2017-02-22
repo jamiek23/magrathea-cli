@@ -111,8 +111,8 @@ vorpal.command('status <number>', 'Gets information about a number').types({ str
 			action.log('Activated:', data.activated ? 'Yes' : 'No');
 			action.log('Expires:', data.expiry);
 			data.destinations.forEach(function(target, i) {
-				if(target && target.length) {
-					action.log('Destination '+ ( i + 1 ) + ':', target);
+				if(target) {
+					action.log('Destination '+ ( i + 1 ) + ':', target.toString());
 				}
 			});
 		}
