@@ -3,17 +3,46 @@
 'use strict';
 
 const debug = require('debug');
+const vorpal = require('vorpal')();
 
 debug.log = function() {
 	vorpal.log.apply(vorpal, arguments);
+};
+
+const NTSAPI = require('./lib/ntsapi');
+var api;
+
+function validateNumber(args) {
+	if(!NTSAPI.validators.isTelephoneNumber(args.number)) {
+		return "Invalid number format.";
+	}
+	return true;
 }
 
-const vorpal = require('vorpal')();
-const NTSAPI = require('./lib/ntsapi');
+function validateAllocatableNumber(args) {
+	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
+		return "Invalid number format.";
+	}
+	return true;
+}
+
+function validateAvailable(args) {
+	var size;
+	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
+		return 'Invalid number format';
+	}
+	if(args.size) {
+		size = parseInt(args.size, 10);
+		if(isNaN(size) || size < 1) {
+			return 'Invalid size';
+		}
+	}
+	return true;
+}
 
 vorpal.log('Connecting to Magrathea...');
 
-var api = new NTSAPI();
+api = new NTSAPI();
 
 api.on('close', function() {
 	vorpal.log('Connection to server lost');
@@ -86,14 +115,16 @@ vorpal.command('activate <number>', 'Activate a number').types({ string: [ '_' ]
 vorpal.command('deactivate <number>', 'Activate a number').types({ string: [ '_' ] }).validate(validateNumber).action(function(args, cb) {
 	var action = this;
 	api.status(args.number, function(success, data) {
-		action.log(msg);
+		action.log(data);
+		cb();
 	});
 });
 
 vorpal.command('reactivate <number>', 'Reactivate a number previously deactivated').types({ string: [ '_' ] }).validate(validateNumber).action(function(args, cb) {
 	var action = this;
 	api.status(args.number, function(success, data) {
-		action.log(msg);
+		action.log(data);
+		cb();
 	});
 });
 
@@ -101,6 +132,7 @@ vorpal.command('destination <number> <priority> <destination>', 'Set the destina
 	var action = this;
 	api.destination(args.number, args.priority, args.destination, function(success, msg) {
 		action.log(msg);
+		cb();
 	});
 });
 
@@ -126,12 +158,11 @@ vorpal.command('status <number>', 'Gets information about a number').types({ str
 vorpal.command('available <number> [size]', 'Provide a list of available numbers. If size is not specified, then a value of 10 is assumed.')
 	.types({ string: [ '_' ] }).validate(validateAvailable).action(function(args, cb) {
 		var action = this;
-		var number = args.number;
 		var size = 10;
 		if(args.size) {
-			size = parseInt(args.size);
+			size = parseInt(args.size, 10);
 		}
-		api.availableNumbers(number, size, function(success, data) {
+		api.availableNumbers(args.number, size, function(success, data) {
 			if(success) {
 				action.log('Found ' + data.length + ' numbers');
 				data.forEach(function(number) {
@@ -150,34 +181,7 @@ vorpal.command('connection', 'Show information about the current connection').ac
 	cb();
 });
 
-vorpal.find('exit').description('Quits the CLI').action(function(args, callback) {
+vorpal.find('exit').description('Quits the CLI').action(function() {
 	api.disconnect();
 	process.exit();
 });
-
-function validateNumber(args) {
-	if(!NTSAPI.validators.isTelephoneNumber(args.number)) {
-		return "Invalid number format.";
-	}
-	return true;
-}
-
-function validateAllocatableNumber(args) {
-	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
-		return "Invalid number format.";
-	}
-	return true;
-}
-
-function validateAvailable(args) {
-	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
-		return 'Invalid number format';
-	}
-	if(args.size) {
-		var size = parseInt(args.size);
-		if(size == NaN || size < 1) {
-			return 'Invalid size';
-		}
-	}
-	return true;
-}
