@@ -13,14 +13,14 @@ const NTSAPI = require('./lib/ntsapi');
 var api;
 
 function validateNumber(args) {
-	if(!NTSAPI.validators.isTelephoneNumber(args.number)) {
+	if(!NTSAPI.Validators.isTelephoneNumber(args.number)) {
 		return "Invalid number format.";
 	}
 	return true;
 }
 
 function validateAllocatableNumber(args) {
-	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
+	if(!NTSAPI.Validators.isAllocatableNumber(args.number)) {
 		return "Invalid number format.";
 	}
 	return true;
@@ -28,7 +28,7 @@ function validateAllocatableNumber(args) {
 
 function validateAvailable(args) {
 	var size;
-	if(!NTSAPI.validators.isAllocatableNumber(args.number)) {
+	if(!NTSAPI.Validators.isAllocatableNumber(args.number)) {
 		return 'Invalid number format';
 	}
 	if(args.size) {
@@ -120,21 +120,31 @@ vorpal.command('deactivate <number>', 'Activate a number').types({ string: [ '_'
 	});
 });
 
-vorpal.command('reactivate <number>', 'Reactivate a number previously deactivated').types({ string: [ '_' ] }).validate(validateNumber).action(function(args, cb) {
-	var action = this;
-	api.status(args.number, function(success, data) {
-		action.log(data);
-		cb();
+vorpal.command('reactivate <number>', 'Reactivate a number previously deactivated')
+	.types({ string: [ '_' ] })
+	.validate(validateNumber)
+	.action(function(args, cb) {
+		var action = this;
+		api.status(args.number, function(success, data) {
+			action.log(data);
+			cb();
+		});
 	});
-});
 
-vorpal.command('destination <number> <priority> <destination>', 'Set the destination of a number').types({ string: [ '_' ] }).validate(validateNumber).action(function(args, cb) {
-	var action = this;
-	api.destination(args.number, args.priority, args.destination, function(success, msg) {
-		action.log(msg);
-		cb();
+vorpal.command('destination <number> <destination>', 'Set the destination of a number')
+	.alias('dest', 'set')
+	.types({ string: [ '_' ] })
+	.validate(validateNumber)
+	.option('-p, --priority', 'Set the priority of the destination (default: 1)', ['1', '2', '3'])
+	.action(function(args, cb) {
+		var action = this;
+		var priority = args.priority ? args.priority : '1';
+		var dest = new NTSAPI.Destination(dest);
+		api.destination(args.number, priority, dest, function(success, msg) {
+			action.log(msg);
+			cb();
+		});
 	});
-});
 
 vorpal.command('status <number>', 'Gets information about a number').types({ string: [ '_' ] }).validate(validateNumber).action(function(args, cb) {
 	var action = this;
