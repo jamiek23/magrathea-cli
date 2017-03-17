@@ -67,4 +67,42 @@ describe('Validators', function() {
 			assert.strictEqual(validators.stripNonNumeric(null), '');
 		});
 	});
+
+	describe('.emergencyAbbreviate()', function() {
+		it('should cope with null/empty strings', function() {
+			assert.strictEqual(validators.emergencyAbbreviate(''), '');
+			assert.strictEqual(validators.emergencyAbbreviate(null), '');
+		});
+
+		it('abbreviates words', function(){
+			assert.equal(validators.emergencyAbbreviate('Chimney Sweep'), 'Chim Swp');
+			assert.equal(validators.emergencyAbbreviate('Zinc'), 'Zn');
+		});
+
+		it('replaces words with the correct abbreviation', function(){
+			assert.equal(validators.emergencyAbbreviate('My job is a Chiropodist (State Registered)'), 'My job is a Chrpdst (SR)');
+		});
+	});
+
+	describe('.isUKPostcode()', function() {
+		it('should cope with null/empty strings', function() {
+			assert.strictEqual(validators.isUKPostcode(''), false);
+			assert.strictEqual(validators.isUKPostcode(null), false);
+		});
+
+		it('validates postcodes', function(){
+			assert.equal(validators.isUKPostcode('MK3 6EB'), true);
+			assert.equal(validators.isUKPostcode('MK170SR'), true);
+		});
+
+		it('copes with postcodes with strange cases', function(){
+			assert.equal(validators.isUKPostcode('Mk3 6eB'), true);
+			assert.equal(validators.isUKPostcode('MK170sr'), true);
+		});
+
+		it('rejects invalid strings', function(){
+			// US ZIP code
+			assert.equal(validators.isUKPostcode('20001'), true);
+		});
+	});
 });
