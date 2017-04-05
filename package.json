@@ -1,6 +1,6 @@
 {
   "name": "magrathea-cli",
-  "version": "1.0.0-dev",
+  "version": "1.0.0-dev2",
   "description": "CLI for the NTS API with Magrathea Telecom.",
   "repository": "https://github.com/jamiek23/magrathea-cli.git",
   "main": "cli.js",
