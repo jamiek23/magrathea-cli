@@ -139,7 +139,7 @@ vorpal.command('destination <number> <destination>', 'Set the destination of a n
 	.action(function(args, cb) {
 		var action = this;
 		var priority = args.priority ? args.priority : '1';
-		var dest = new NTSAPI.Destination(dest);
+		var dest = new NTSAPI.Destination(args.destination);
 		api.destination(args.number, priority, dest, function(success, msg) {
 			action.log(msg);
 			cb();
