@@ -102,7 +102,7 @@ describe('Validators', function() {
 
 		it('rejects invalid strings', function(){
 			// US ZIP code
-			assert.equal(validators.isUKPostcode('20001'), true);
+			assert.equal(validators.isUKPostcode('20001'), false);
 		});
 	});
 });
