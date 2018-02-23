@@ -89,7 +89,7 @@ vorpal.command('allocate <number>', 'Allocate a number.').types({ string: [ '_' 
 	var action = this;
 	api.allocate(args.number, function(success, msg) {
 		if(success) {
-			action.log('Success - ' + msg + 'allocated');
+			action.log('Success - ' + args.number + ' allocated');
 			action.log('(Remember to activate your new number!)');
 		}
 		else {
@@ -103,7 +103,7 @@ vorpal.command('activate <number>', 'Activate a number').types({ string: [ '_' ]
 	var action = this;
 	api.activate(args.number, function(success, msg) {
 		if(success) {
-			action.log('Success - ' + msg + 'activated');
+			action.log('Success - ' + args.number + ' activated');
 		}
 		else {
 			action.log(msg);
